@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kino Sayt</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #07101d;
+      --surface: rgba(15, 23, 42, 0.96);
+      --surface-soft: rgba(15, 23, 42, 0.72);
+      --border: rgba(148, 163, 184, 0.18);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96, 165, 250, 0.18);
+      --radius: 26px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      min-height: 100%;
+    }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: radial-gradient(circle at top, rgba(96, 165, 250, 0.15), transparent 22%),
+                  radial-gradient(circle at 20% 10%, rgba(59, 130, 246, 0.14), transparent 20%),
+                  linear-gradient(180deg, #07101d 0%, #101827 100%);
+      color: var(--text);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('https://images.unsplash.com/photo-1517601649778-3f5d2021031f?auto=format&fit=crop&w=1600&q=20') center/cover no-repeat;
+      opacity: 0.08;
+      z-index: -1;
+      filter: blur(1px);
+    }
+
+    .page-wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 36px 24px 52px;
+    }
+
+    .floating-emoji-container {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      bottom: -20px;
+      font-size: 3rem;
+      opacity: 0.9;
+      animation: floatUp 12s infinite ease-in-out, hueShift 8s infinite linear;
+      will-change: transform, opacity, filter;
+    }
+
+    .floating-emoji:nth-child(1) { left: 4%; animation-duration: 11.4s; font-size: 2.6rem; }
+    .floating-emoji:nth-child(2) { left: 18%; animation-duration: 9.8s; font-size: 3rem; }
+    .floating-emoji:nth-child(3) { left: 29%; animation-duration: 12.2s; font-size: 2.8rem; }
+    .floating-emoji:nth-child(4) { left: 38%; animation-duration: 10.5s; font-size: 2.7rem; }
+    .floating-emoji:nth-child(5) { left: 52%; animation-duration: 11.8s; font-size: 3.2rem; }
+    .floating-emoji:nth-child(6) { left: 64%; animation-duration: 9.9s; font-size: 2.9rem; }
+    .floating-emoji:nth-child(7) { left: 72%; animation-duration: 13s; font-size: 2.6rem; }
+    .floating-emoji:nth-child(8) { left: 82%; animation-duration: 10.4s; font-size: 3rem; }
+    .floating-emoji:nth-child(9) { left: 90%; animation-duration: 11.6s; font-size: 2.7rem; }
+    .floating-emoji:nth-child(10) { left: 60%; animation-duration: 12.5s; font-size: 3rem; }
+
+    @keyframes floatUp {
+      0% {
+        transform: translate3d(0, 0, 0) rotate(0deg);
+        opacity: 0.9;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate3d(0, -130vh, 0) rotate(26deg);
+        opacity: 0.2;
+      }
+    }
+
+    @keyframes hueShift {
+      0% { filter: hue-rotate(0deg); }
+      50% { filter: hue-rotate(90deg); }
+      100% { filter: hue-rotate(180deg); }
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 34px;
+      position: relative;
+      z-index: 1;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.6rem, 4vw, 4.4rem);
+      letter-spacing: -0.06em;
+      line-height: 1.03;
+    }
+
+    header p {
+      margin: 20px auto 0;
+      max-width: 760px;
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 1rem;
+    }
+
+    .hero-meta {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 26px;
+      color: #cbd5e1;
+      font-size: 0.97rem;
+    }
+
+    .hero-meta span {
+      background: rgba(255,255,255,0.06);
+      padding: 10px 16px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .controls {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .search-bar {
+      display: flex;
+      justify-content: center;
+    }
+
+    .search-bar input {
+      width: min(100%, 680px);
+      max-width: 100%;
+      padding: 16px 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(15, 23, 42, 0.88);
+      color: var(--text);
+      font-size: 1rem;
+      outline: none;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18);
+      transition: border-color 200ms ease, transform 200ms ease;
+    }
+
+    .search-bar input:focus {
+      border-color: rgba(96, 165, 250, 0.45);
+      transform: translateY(-1px);
+    }
+
+    .search-bar input::placeholder {
+      color: var(--muted);
+    }
+
+    .filter-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 6px 0;
+    }
+
+    .filter-chip {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 16px;
+      background: rgba(15, 23, 42, 0.88);
+      color: var(--muted);
+      cursor: pointer;
+      transition: background 180ms ease, color 180ms ease, transform 180ms ease;
+      white-space: nowrap;
+    }
+
+    .filter-chip:hover,
+    .filter-chip.active {
+      background: rgba(96, 165, 250, 0.18);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .featured-card {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 32px;
+      padding: 28px;
+      border-radius: var(--radius);
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.26);
+    }
+
+    .featured-card img {
+      width: 100%;
+      border-radius: 20px;
+      max-height: 360px;
+      object-fit: cover;
+    }
+
+    .featured-content {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .featured-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 999px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      font-size: 0.92rem;
+      width: fit-content;
+    }
+
+    .featured-title {
+      margin: 0;
+      font-size: clamp(2rem, 3vw, 3rem);
+      line-height: 1.05;
+    }
+
+    .featured-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+
+    .featured-description {
+      margin: 0;
+      color: #d2dae2;
+      line-height: 1.75;
+      max-width: 100%;
+    }
+
+    .movies-grid {
+      display: grid;
+      gap: 24px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+
+    .movie-card {
+      position: relative;
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.95));
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.22);
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .movie-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(96, 165, 250, 0.4);
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.26);
+    }
+
+    .movie-card img {
+      width: 100%;
+      display: block;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      filter: saturate(1.05);
+    }
+
+    .movie-body {
+      padding: 22px;
+    }
+
+    .movie-title {
+      margin: 0 0 10px;
+      font-size: 1.25rem;
+    }
+
+    .movie-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+
+    .movie-description {
+      margin: 0;
+      color: #cbd5e1;
+      line-height: 1.75;
+      font-size: 0.98rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 1.05rem;
+      margin-top: 24px;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 42px;
+      color: #64748b;
+      font-size: 0.95rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 920px) {
+      .featured-card {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-wrapper {
+        padding: 24px 16px 40px;
+      }
+
+      .hero-meta {
+        flex-direction: column;
+      }
+
+      .movie-body {
+        padding: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="floating-emoji-container">
+    <span class="floating-emoji">💕</span>
+    <span class="floating-emoji">🤣</span>
+    <span class="floating-emoji">😂</span>
+    <span class="floating-emoji">😒</span>
+    <span class="floating-emoji">😍</span>
+    <span class="floating-emoji">😊</span>
+    <span class="floating-emoji">👌</span>
+    <span class="floating-emoji">😘</span>
+    <span class="floating-emoji">😎</span>
+    <span class="floating-emoji">🤩</span>
+  </div>
+  <div class="page-wrapper">
+    <header>
+      <h1>Kino Sayt</h1>
+      <p>Eng yaxshi filmlarni toping, tavsiflarni o'qing va qidiruv yordamida tezkori natijalarni oling.</p>
+      <div class="hero-meta">
+        <span>12+ tanlangan film</span>
+        <span>Javob beruvchi dizayn</span>
+        <span>Qidiruv va filtrlar bilan</span>
+      </div>
+    </header>
+
+    <div class="controls">
+      <div class="search-bar">
+        <input id="movieSearch" type="text" placeholder="Film nomi, janr yoki tavsif bo'yicha qidiring..." aria-label="Film qidiruvi">
+      </div>
+      <div id="filterChips" class="filter-chips"></div>
+    </div>
+
+    <section id="featuredMovie" class="featured-card" aria-label="Featured movie"></section>
+
+    <div id="moviesGrid" class="movies-grid"></div>
+    <p id="emptyState" class="empty-state" hidden>Hech qanday film topilmadi. Boshqacha qidiruv so'zini kiriting.</p>
+  </div>
+
+  <footer>
+    <p>&copy; 2026 Kino Sayt. Film izlash uchun qulay sahifa.</p>
+  </footer>
+
+  <script>
+    const movies = [
+      {
+        title: 'Dunyo Ichida',
+        year: 2024,
+        genre: 'Drama, Sayohat',
+        description: 'Yosh boshqaruvchi uzoq sayohatga chiqadi va yangi doʻstlar topadi.',
+        image: 'https://images.unsplash.com/photo-1524985069026-dd778a71c7b4?auto=format&fit=crop&w=1000&q=80'
+      },
+      {
+        title: 'Yulduzlar Qiyofasi',
+        year: 2023,
+        genre: 'Fantastika, Drama',
+        description: 'Kelajakdagi kosmik ekspeditsiyada ruhiy va texnologik sinovlar boshlanadi.',
+        image: 'https://images.unsplash.com/photo-1517601649778-3f5d2021031f?auto=format&fit=crop&w=1000&q=80'
+      },
+      {
+        title: 'Shahar Chiroqlari',
+        year: 2025,
+        genre: 'Kriminal, Triller',
+        description: 'Nozik izlar bilan toʻlib-toshgan shahar sirlarini ochib berish.',
+        image: 'https://images.unsplash.com/photo-1494526585095-c41746248156?auto=format&fit=crop&w=1000&q=80'
+      },
+      {
+        title: 'Oriyat Ustasi',
+        year: 2022,
+        genre: 'Aksiya, Sarguzasht',
+        description: 'Qahramon jamiyatni saqlab qolish uchun oʻz chegarasini sinaydi.',
+        image: 'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=1000&q=80'
+      },
+      {
+        title: 'Tungi Portret',
+        year: 2024,
+        genre: 'Romantik, Drama',
+        description: 'Ikki inson chegaralarni sindirar ekan, tun ularning guvohi bo‘ladi.',
+        image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=1000&q=80'
+      },
+      {
+        title: 'Qorong‘u Tunnel',
+        year: 2025,
+        genre: 'Fantastika, Triller',
+        description: 'Ichki dunyo va tashqi haqiqat o‘rtasida sirli yo‘l ochiladi.',
+        image: 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1000&q=80'
+      }
+    ];
+
+    const featuredMovieEl = document.getElementById('featuredMovie');
+    const moviesGrid = document.getElementById('moviesGrid');
+    const emptyState = document.getElementById('emptyState');
+    const movieSearch = document.getElementById('movieSearch');
+    const filterChips = document.getElementById('filterChips');
+    const genres = ['Barchasi', ...new Set(movies.flatMap(movie => movie.genre.split(',').map(item => item.trim())))];
+    let activeGenre = 'Barchasi';
+
+    function createMovieCard(movie) {
+      const card = document.createElement('article');
+      card.className = 'movie-card';
+      card.innerHTML = `
+        <img src="${movie.image}" alt="${movie.title} film sahnasi">
+        <div class="movie-body">
+          <h2 class="movie-title">${movie.title}</h2>
+          <div class="movie-meta"><span>${movie.year}</span><span>•</span><span>${movie.genre}</span></div>
+          <p class="movie-description">${movie.description}</p>
+        </div>
+      `;
+      return card;
+    }
+
+    function renderFeatured(movie) {
+      featuredMovieEl.innerHTML = `
+        <img src="${movie.image}" alt="Asosiy film: ${movie.title}">
+        <div class="featured-content">
+          <span class="featured-label">Tanlangan film</span>
+          <h2 class="featured-title">${movie.title}</h2>
+          <div class="featured-meta"><span>${movie.year}</span><span>•</span><span>${movie.genre}</span></div>
+          <p class="featured-description">${movie.description} Sahifada qolgan filmlarni ham ko‘zdan kechiring yoki yorliq orqali tez filtrlashni bajaring.</p>
+        </div>
+      `;
+    }
+
+    function renderGenreChips() {
+      filterChips.innerHTML = '';
+      genres.forEach(genre => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'filter-chip' + (genre === activeGenre ? ' active' : '');
+        button.textContent = genre;
+        button.addEventListener('click', () => {
+          activeGenre = genre;
+          updateMovies();
+        });
+        filterChips.appendChild(button);
+      });
+    }
+
+    function updateMovies() {
+      const query = movieSearch.value.trim().toLowerCase();
+      const filtered = movies.filter(movie => {
+        const matchesSearch = [movie.title, movie.genre, movie.description]
+          .some(text => text.toLowerCase().includes(query));
+        const matchesGenre = activeGenre === 'Barchasi' || movie.genre.split(',').map(g => g.trim()).includes(activeGenre);
+        return matchesSearch && matchesGenre;
+      });
+
+      renderMovies(filtered);
+      renderGenreChips();
+      featuredMovieEl.hidden = false;
+      renderFeatured(filtered[0] || movies[0]);
+      emptyState.hidden = filtered.length > 0;
+    }
+
+    function renderMovies(list) {
+      moviesGrid.innerHTML = '';
+      if (list.length === 0) {
+        emptyState.hidden = false;
+        return;
+      }
+      emptyState.hidden = true;
+      list.forEach(movie => moviesGrid.appendChild(createMovieCard(movie)));
+    }
+
+    movieSearch.addEventListener('input', updateMovies);
+    renderGenreChips();
+    updateMovies();
+  </script>
+</body>
+</html>
